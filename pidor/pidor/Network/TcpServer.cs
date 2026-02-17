@@ -1,11 +1,12 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace pidor.Network;
 
-public class TcpServer
+public class TcpServer(RSA ServerRSA)
 {
     private TcpListener listener;
     private readonly ConcurrentDictionary<int, ServerClient> clients = new();
@@ -16,18 +17,15 @@ public class TcpServer
     private readonly object lockObj = new object();
     private int activeClients = 0;
 
-    public void Start(int port = 1337)
+    public async Task StartAsync(int port = 1337)
     {
         listener = new TcpListener(IPAddress.Any, port);
         listener.Start(50);
         
-        listener.Server.ReceiveBufferSize = 128 * 1024;
-        listener.Server.SendBufferSize = 64 * 1024;
-        
         Console.WriteLine($"TCP Server started on port {port}");
         
         listener.BeginAcceptTcpClient(OnClientConnected, null);
-        Task.Run(CommandLoop);
+        await Task.Run(PingLoop);
     }
 
     private void OnClientConnected(IAsyncResult ar)
@@ -55,7 +53,7 @@ public class TcpServer
             lock (lockObj) 
             { 
                 activeClients++; 
-                Console.WriteLine($"Client {clientId} connected. Active: {activeClients}");
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Client {clientId} connected. Active: {activeClients}");
             }
             
             // Continue accepting
@@ -75,19 +73,11 @@ public class TcpServer
             using NetworkStream stream = serverClient.Client.GetStream();
             using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
             using StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
-            
-            string data;
-            while (running && (data = reader.ReadLine()) != null)
-            {
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Client {serverClient.Id}: {data}");
-                
-                if (data.Trim().ToLower() == "quit")
-                    break;
-            }
+            // authentification
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Client {serverClient.Id} error: {ex.Message}");
+            Console.WriteLine($"Client {serverClient.Id} failed to authentificate. error: {ex.Message}");
         }
         finally
         {
@@ -96,41 +86,11 @@ public class TcpServer
         }
     }
 
-    public void Broadcast(string message)
-    {
-        foreach (var kvp in clients)
-        {
-            try
-            {
-                kvp.Value.Writer.WriteLine($"[BROADCAST] {message}");
-            }
-            catch
-            {
-                // Client disconnected during broadcast
-                CleanupClient(kvp.Key);
-            }
-        }
-        Console.WriteLine($"Broadcast sent to {clients.Count} clients");
-    }
-
-    private void CommandLoop()
+    private void PingLoop()
     {
         while (running)
         {
-            string input = Console.ReadLine()!;
-            if (input?.ToLower() == "quit") break;
-            
-            if (input!.StartsWith("broadcast "))
-            {
-                Broadcast(input.Substring(10));
-            }
-            else if (input == "stats")
-            {
-                lock (lockObj)
-                {
-                    Console.WriteLine($"Stats: {activeClients} active, {clients.Count} tracked, {clientThreads.Count} threads");
-                }
-            }
+            // do ping bs 
         }
         
         Stop();
