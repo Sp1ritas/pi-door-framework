@@ -12,6 +12,6 @@ public class ServerClient
     {
         Id = id;
         Client = client;
-        Writer = new StreamWriter(client.GetStream(), Encoding.UTF8) { AutoFlush = true };
+        Writer = new StreamWriter(client.GetStream()) { AutoFlush = true };
     }
 }

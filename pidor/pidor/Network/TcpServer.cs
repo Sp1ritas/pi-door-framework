@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace pidor.Network;
 
@@ -71,9 +70,7 @@ public class TcpServer(RSA ServerRSA)
         try
         {
             using NetworkStream stream = serverClient.Client.GetStream();
-            using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-            using StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
-            // authentification
+            // rsa key exchange, authentification
         }
         catch (Exception ex)
         {
@@ -106,7 +103,7 @@ public class TcpServer(RSA ServerRSA)
         }
     }
 
-    public void Stop()
+    private void Stop()
     {
         Console.WriteLine("Shutting down server...");
         running = false;
@@ -122,6 +119,23 @@ public class TcpServer(RSA ServerRSA)
         
         foreach (var thread in clientThreads)
             thread.Join(1000);
+    }
+    
+    // todo: Seperate utility library for ts shit
+    private byte[] ReadExactBytes(NetworkStream stream, int expectedLength)
+    {
+        byte[] result = new byte[expectedLength];
+        int totalRead = 0;
+
+        while (totalRead < expectedLength)
+        {
+            int bytesRead = stream.Read(result, totalRead, expectedLength - totalRead);
+            if (bytesRead == 0) 
+                throw new EndOfStreamException("Connection closed before expected data");
+        
+            totalRead += bytesRead;
+        }
+        return result;
     }
 }
 
