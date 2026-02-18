@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pidor", "pidor\pidor.csproj", "{670C8080-191D-44A5-AD50-B6467AFDF91E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pidor.testclient", "pidor.testclient\pidor.testclient.csproj", "{AC0CD7A2-6747-42B8-9895-115D80C94DF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{670C8080-191D-44A5-AD50-B6467AFDF91E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{670C8080-191D-44A5-AD50-B6467AFDF91E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{670C8080-191D-44A5-AD50-B6467AFDF91E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC0CD7A2-6747-42B8-9895-115D80C94DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC0CD7A2-6747-42B8-9895-115D80C94DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC0CD7A2-6747-42B8-9895-115D80C94DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC0CD7A2-6747-42B8-9895-115D80C94DF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

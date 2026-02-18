@@ -8,7 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Network\Packets\" />
+      <Folder Include="Network\Admin\" />
+      <Folder Include="Network\Client\" />
     </ItemGroup>
 
 </Project>

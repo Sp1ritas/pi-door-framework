@@ -5,32 +5,45 @@ namespace pidor;
 
 public class Server
 {
-    public async Task StartAsync(int port)
+    private static async Task StartAsync(int port)
     {
         if (!Directory.Exists(".pidor"))
             Directory.CreateDirectory(".pidor");
 
-        RSA rsa = null!;
+        RSA? rsa = null!;
 
         try
         {
-            if (!File.Exists(".pidor/pidor_4096.pub") || !File.Exists(".pidor/pidor_4096.priv8"))
+            var priv8Path = ".pidor/pidor_4096.priv8";
+            var pubPath = ".pidor/pidor_4096.pub8";
+            
+            if (!File.Exists(priv8Path))
             {
                 Console.WriteLine("Initializing server rsa keys");
 
                 rsa = RSA.Create(4096);
 
                 byte[] privateKeyBytes = rsa.ExportPkcs8PrivateKey();
-                await File.WriteAllBytesAsync(".pidor/pidor_4096.pub", privateKeyBytes);
+                byte[] publicKeyBytes = rsa.ExportSubjectPublicKeyInfo();
+
+                await File.WriteAllBytesAsync(priv8Path, privateKeyBytes);
+                await File.WriteAllBytesAsync(pubPath, publicKeyBytes);
             }
             else
             {
-                byte[] privateKeyBytes = await File.ReadAllBytesAsync(".pidor/pidor_4096.priv8");
-                rsa.ImportPkcs8PrivateKey(privateKeyBytes, out _);
-            }
+                byte[] privateKeyBytes = await File.ReadAllBytesAsync(priv8Path);
 
-            var server = new TcpServer(rsa);
-            await server.StartAsync(port);
+                rsa = RSA.Create();
+                rsa.ImportPkcs8PrivateKey(privateKeyBytes, out _);
+                
+                if (!File.Exists(pubPath))
+                {
+                    byte[] publicKeyBytes = rsa.ExportSubjectPublicKeyInfo();
+                    await File.WriteAllBytesAsync(pubPath, publicKeyBytes);
+                }
+            }
+            
+            await new TcpServer(rsa, 50).StartAsync(port);
         }
         catch (Exception e)
         {
